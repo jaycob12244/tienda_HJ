@@ -1,0 +1,16 @@
+
+> aurix-sprint-1@1.0.0 dev
+> next dev
+
+ ÔÜá Port 3000 is in use, trying 3001 instead.
+  Ôû▓ Next.js 14.2.35
+  - Local:        http://localhost:3001
+
+ Ô£ô Starting...
+ Ô£ô Ready in 1230ms
+ Ôùï Compiling / ...
+ Ô£ô Compiled / in 2.2s (287 modules)
+ GET / 200 in 2312ms
+ Ô£ô Compiled in 683ms (289 modules)
+ GET / 200 in 479ms
+ GET / 200 in 13ms

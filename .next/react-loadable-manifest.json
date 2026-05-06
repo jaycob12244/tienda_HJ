@@ -1,0 +1,15 @@
+{
+  "components\\ShoeModel.jsx -> three": {
+    "id": 9477,
+    "files": [
+      "static/chunks/fb7d5399.ac7c0b0b069b065d.js"
+    ]
+  },
+  "components\\ShoeModel.jsx -> three/examples/jsm/loaders/GLTFLoader.js": {
+    "id": 7836,
+    "files": [
+      "static/chunks/fb7d5399.ac7c0b0b069b065d.js",
+      "static/chunks/836.d2581da5135241f9.js"
+    ]
+  }
+}
