@@ -3,3 +3,7 @@
 node_modules
 *.log
 .DS_Store
+
+# Archivos internos de desarrollo (Claude / Superpowers)
+docs/superpowers/
+sprint3/.claude/
