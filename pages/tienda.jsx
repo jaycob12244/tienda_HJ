@@ -2,61 +2,64 @@ import Head from 'next/head';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
-import NavBar    from '../components/layout/NavBar';
-import Footer    from '../components/layout/Footer';
-import Icon      from '../components/ui/Icon';
-import SneakerStage from '../components/ui/SneakerStage';
+import NavBar         from '../components/layout/NavBar';
+import Footer         from '../components/layout/Footer';
+import Icon           from '../components/ui/Icon';
+import SneakerStage   from '../components/ui/SneakerStage';
 import QuickViewModal from '../components/product/QuickViewModal';
 import CartDrawer     from '../components/cart/CartDrawer';
 import SearchOverlay  from '../components/cart/SearchOverlay';
 
-import { useApp } from '../context/AppContext';
-import { PRODUCTS, EXTERNAL_PRODUCTS, FILTERS } from '../data/products';
-
-const ALL_PRODUCTS = [
-  ...EXTERNAL_PRODUCTS,
-  ...PRODUCTS.map(p => ({ ...p, brand: 'Aurix' })),
-];
+import { useApp }                          from '../context/AppContext';
+import { FILTERS }                         from '../data/products';
+import { getAllProducts, filterByCategory } from '../services/productService';
 
 export default function Tienda() {
   const router = useRouter();
   const app    = useApp();
+
+  const [allProducts,  setAllProducts]  = useState([]);
   const [activeFilter, setActiveFilter] = useState('todos');
-  const [quickView, setQuickView]       = useState(null);
+  const [quickView,    setQuickView]    = useState(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(false);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      setLoading(true);
+      setError(false);
+      const data = await getAllProducts();
+      if (data === null) {
+        setError(true);
+      } else {
+        setAllProducts(data);
+      }
+      setLoading(false);
+    }
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const cat = router.query.categoria;
     if (cat) setActiveFilter(cat);
   }, [router.query.categoria]);
 
-  const filtered = activeFilter === 'todos'
-    ? ALL_PRODUCTS
-    : ALL_PRODUCTS.filter(p => p.category === activeFilter);
+  const filtered = filterByCategory(allProducts, activeFilter);
 
   return (
     <>
-      <Head>
-        <title>Tienda — AURIX</title>
-      </Head>
-
+      <Head><title>Tienda — AURIX</title></Head>
       <div className="app-shell">
         <NavBar />
-
         <main>
-          {/* Hero */}
           <section className="shop-hero">
             <div className="container container--wide shop-hero__inner">
               <div className="eyebrow shop-hero__eyebrow">Colección SS26 · Drop 04</div>
-              <h1 className="shop-hero__title">
-                La <span className="editorial">Tienda</span>
-              </h1>
-              <p className="shop-hero__sub">
-                Nike · Adidas · Aurix — todo en un solo lugar.
-              </p>
+              <h1 className="shop-hero__title">La <span className="editorial">Tienda</span></h1>
+              <p className="shop-hero__sub">Nike · Adidas · Aurix — todo en un solo lugar.</p>
             </div>
           </section>
 
-          {/* Sticky filter bar */}
           <div className="shop-filters-bar">
             <div className="container container--wide shop-filters">
               {FILTERS.map(f => (
@@ -71,27 +74,35 @@ export default function Tienda() {
             </div>
           </div>
 
-          {/* Product grid */}
           <div className="shop-grid-wrap">
             <div className="container container--wide">
-              {filtered.length === 0 ? (
+              {loading && (
+                <div className="shop-empty">
+                  <span className="mono">Cargando productos…</span>
+                </div>
+              )}
+              {!loading && error && (
+                <div className="shop-empty">
+                  <span className="mono">Error al cargar productos.</span>
+                  <button className="btn btn--ghost" style={{ marginTop: 16 }} onClick={() => window.location.reload()}>
+                    Reintentar
+                  </button>
+                </div>
+              )}
+              {!loading && !error && filtered.length === 0 && (
                 <div className="shop-empty">
                   <span className="mono">Sin productos en esta categoría</span>
                 </div>
-              ) : (
+              )}
+              {!loading && !error && filtered.length > 0 && (
                 <div className="shop-grid">
                   {filtered.map(p => (
-                    <article
-                      key={p.id}
-                      className="sh-card"
-                      onClick={() => setQuickView(p)}
-                    >
+                    <article key={p.id} className="sh-card" onClick={() => setQuickView(p)}>
                       <div className="sh-card__media">
-                        {p.image ? (
-                          <img src={p.image} alt={p.name} className="sh-card__img" />
-                        ) : (
-                          <SneakerStage label={p.name} />
-                        )}
+                        {p.image
+                          ? <img src={p.image} alt={p.name} className="sh-card__img" />
+                          : <SneakerStage label={p.name} />
+                        }
                         <span className="sh-card__badge mono">{p.badge}</span>
                         <button
                           className={`sh-card__fav${app.favorites.has(p.id) ? ' is-on' : ''}`}
@@ -106,9 +117,7 @@ export default function Tienda() {
                         <div className="sh-card__name">{p.name}</div>
                         <div className="sh-card__row">
                           <span className="mono sh-card__price">{p.currency}{p.price}</span>
-                          <span className="sh-card__arrow">
-                            <Icon name="arrow-up-right" size={13} />
-                          </span>
+                          <span className="sh-card__arrow"><Icon name="arrow-up-right" size={13} /></span>
                         </div>
                       </div>
                     </article>
@@ -118,12 +127,15 @@ export default function Tienda() {
             </div>
           </div>
         </main>
-
         <Footer />
       </div>
 
       {quickView && (
-        <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
+        <QuickViewModal
+          product={quickView}
+          allProducts={allProducts}
+          onClose={() => setQuickView(null)}
+        />
       )}
       <CartDrawer />
       <SearchOverlay />

@@ -11,13 +11,13 @@ const COLORS = [
   { id: 2, n: 'Cream', hex: '#C9B8A1' },
 ];
 
-export default function QuickViewModal({ product: initialProduct, onClose }) {
+export default function QuickViewModal({ product: initialProduct, allProducts = [], onClose }) {
   const app = useApp();
   const [product, setProduct] = useState(initialProduct);
   const [size,    setSize]    = useState(null);
   const [color,   setColor]   = useState(0);
 
-  const related   = getRelated(product);
+  const related   = getRelated(product, allProducts);
   const isFav     = app.favorites.has(product.id);
 
   // Resetear talla/color al cambiar de producto

@@ -1,22 +1,25 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import Icon from '../ui/Icon';
 
 const FIRST = 44, LAST = 102;
 const COUNT = LAST - FIRST + 1; // 59 frames, transparent PNG
 const pad = (n) => String(n).padStart(3, '0');
 const FRAMES = Array.from({ length: COUNT }, (_, i) =>
-  `/frames/ezgif-frame-${pad(FIRST + i)}.png`
+  `/frames/ezgif-frame-${pad(FIRST + i)}.webp`
 );
 
 const LERP = 0.2; // smoothing factor — lower = slower/smoother, higher = snappier
 
-export default function Hero({ onShop }) {
-  const heroRef    = useRef(null);
-  const targetT    = useRef(0);   // raw scroll progress (updated on scroll)
-  const currentT   = useRef(0);   // lerped progress (drives the visual)
-  const [t, setT]            = useState(0);
-  const [frameIdx, setFrameIdx] = useState(0);
+export default function Hero() {
+  const heroRef   = useRef(null);
+  const targetT   = useRef(0);   // raw scroll progress (updated on scroll)
+  const currentT  = useRef(0);   // lerped progress (drives the visual)
   const preloaded = useRef(false);
+
+  // Refs a nodos DOM — el rAF loop los actualiza directamente sin re-renders
+  const imgRef   = useRef(null);
+  const shoeRef  = useRef(null);
+  const titleRef = useRef(null);
 
   // Preload all frames so scroll is instant
   useEffect(() => {
@@ -29,7 +32,24 @@ export default function Hero({ onShop }) {
   }, []);
 
   useEffect(() => {
-    // Update raw target on every scroll event
+    let raf;
+
+    const tick = () => {
+      const prev = currentT.current;
+      const next = prev + (targetT.current - prev) * LERP;
+      if (Math.abs(next - prev) > 0.0001) {
+        currentT.current = next;
+        // Actualización directa al DOM — React no se entera, cero re-renders
+        const idx = Math.min(COUNT - 1, Math.round(next * (COUNT - 1)));
+        if (imgRef.current)   imgRef.current.src = FRAMES[idx];
+        if (shoeRef.current)  shoeRef.current.style.transform =
+          `translate3d(0, ${next * -30}px, 0) scale(${1 + next * 0.04})`;
+        if (titleRef.current) titleRef.current.style.transform =
+          `translate3d(0, ${-next * 4}px, 0)`;
+        raf = requestAnimationFrame(tick); // solo continuar si hay movimiento
+      }
+    };
+
     const onScroll = () => {
       const el = heroRef.current;
       if (!el) return;
@@ -38,37 +58,21 @@ export default function Hero({ onShop }) {
       targetT.current  = scrollable > 0
         ? Math.max(0, Math.min(1, -r.top / scrollable))
         : 0;
-    };
-
-    // rAF loop: lerp currentT toward targetT every frame
-    let raf;
-    const tick = () => {
-      const prev = currentT.current;
-      const next = prev + (targetT.current - prev) * LERP;
-      // Only update state when there's a meaningful change
-      if (Math.abs(next - prev) > 0.0001) {
-        currentT.current = next;
-        setT(next);
-        setFrameIdx(Math.min(COUNT - 1, Math.round(next * (COUNT - 1))));
-      }
+      cancelAnimationFrame(raf);
       raf = requestAnimationFrame(tick);
     };
 
-    onScroll();
+    onScroll(); // calcular posición inicial y arrancar primer tick
     window.addEventListener('scroll', onScroll, { passive: true });
-    raf = requestAnimationFrame(tick);
-    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+    window.addEventListener('resize', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
-  const shoeTransform = `translate3d(0, ${t * -30}px, 0) scale(${1 + t * 0.04})`;
-  const titleOffset   = -t * 4;
-
   return (
-    /*
-      The section is 250vh tall — the extra 150vh is the "scroll runway"
-      for the frame animation. The inner .hero__sticky stays pinned to the
-      viewport while the user scrolls through the frames.
-    */
     <section className="hero" ref={heroRef} style={{ minHeight: '250vh' }}>
       <div className="hero__sticky">
 
@@ -87,22 +91,21 @@ export default function Hero({ onShop }) {
 
         {/* Stage */}
         <div className="hero__stage">
-          {/* Main title — large, top of stage */}
-          <div
-            className="hero__titles"
-            style={{ transform: `translate3d(0, ${titleOffset}px, 0)` }}
-          >
+          {/* ref={titleRef} — transform actualizado por rAF directamente */}
+          <div className="hero__titles" ref={titleRef}>
             <div className="hero__row">
               <span>Silent</span>
               <span className="editorial editorial--em">motion</span>
             </div>
           </div>
 
-          {/* Frame animation shoe */}
-          <div className="hero__shoe" style={{ transform: shoeTransform }}>
+          {/* ref={shoeRef} — transform actualizado por rAF directamente */}
+          <div className="hero__shoe" ref={shoeRef}>
             <div className="hero__shoe-inner">
+              {/* ref={imgRef} — src actualizado por rAF directamente */}
               <img
-                src={FRAMES[frameIdx]}
+                ref={imgRef}
+                src={FRAMES[0]}
                 alt="AURIX shoe"
                 className="hero__seq-img"
                 draggable={false}

@@ -2,14 +2,19 @@ import { useState, useEffect, useRef } from 'react';
 import Icon from '../ui/Icon';
 import SneakerStage from '../ui/SneakerStage';
 import { useApp } from '../../context/AppContext';
-import { PRODUCTS } from '../../data/products';
+import { getAllProducts } from '../../services/productService';
 
 const SUGGESTIONS = ['aurix one', 'kinetic core', 'trail k2', 'carbon plate', 'ivory'];
 
 export default function SearchOverlay() {
   const app = useApp();
-  const [q, setQ] = useState('');
+  const [q, setQ]             = useState('');
+  const [products, setProducts] = useState([]);
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    getAllProducts().then(data => { if (data) setProducts(data); });
+  }, []);
 
   useEffect(() => {
     if (app.searchOpen) {
@@ -30,7 +35,7 @@ export default function SearchOverlay() {
   if (!app.searchOpen) return null;
 
   const results = q.trim()
-    ? PRODUCTS.filter(p => (p.name + p.category + p.desc).toLowerCase().includes(q.toLowerCase()))
+    ? products.filter(p => (p.name + p.category + p.desc).toLowerCase().includes(q.toLowerCase()))
     : [];
 
   return (

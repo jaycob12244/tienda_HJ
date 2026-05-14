@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Icon, { Monogram } from '../ui/Icon';
 import { useApp } from '../../context/AppContext';
 import { NAV_LINKS } from '../../data/products';
+import ProfileDropdown from '../ui/ProfileDropdown';
 
 export default function NavBar() {
   const app = useApp();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileTriggerRef = useRef(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -16,6 +19,18 @@ export default function NavBar() {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  // Cerrar dropdown al navegar a otra ruta
+  useEffect(() => {
+    const handleRouteChange = () => setProfileOpen(false);
+    router.events.on('routeChangeStart', handleRouteChange);
+    return () => router.events.off('routeChangeStart', handleRouteChange);
+  }, [router.events]);
+
+  // Cerrar dropdown al cerrar sesión
+  useEffect(() => {
+    if (!app.user) setProfileOpen(false);
+  }, [app.user]);
 
   const handleNav = (id) => {
     setMobileOpen(false);
@@ -32,6 +47,17 @@ export default function NavBar() {
       }
     }
   };
+
+  const handleProfileClick = useCallback(() => {
+    if (app.user) {
+      setProfileOpen(open => !open);
+    } else {
+      router.push('/login');
+    }
+  }, [app.user, router]);
+
+  // Callback estable para pasar a ProfileDropdown como onClose
+  const closeProfile = useCallback(() => setProfileOpen(false), []);
 
   return (
     <header className={`nav${scrolled ? ' is-solid' : ''}`}>
@@ -60,9 +86,28 @@ export default function NavBar() {
               <span className="nav__badge">{app.favorites.size}</span>
             )}
           </button>
-          <button className="nav__icon" aria-label="Cuenta" onClick={() => router.push('/login')}>
-            <Icon name="user" size={18} />
-          </button>
+
+          {/* Perfil: wrapper relativo para posicionar el dropdown */}
+          <div style={{ position: 'relative' }}>
+            <button
+              ref={profileTriggerRef}
+              className="nav__icon"
+              aria-label="Cuenta"
+              {...(app.user ? { 'aria-expanded': profileOpen } : {})}
+              onClick={handleProfileClick}
+            >
+              <Icon name="user" size={18} />
+            </button>
+            {profileOpen && app.user && (
+              <ProfileDropdown
+                user={app.user}
+                favoritesCount={app.favorites.size}
+                onClose={closeProfile}
+                triggerRef={profileTriggerRef}
+              />
+            )}
+          </div>
+
           <button className="nav__bag" onClick={() => app.setCartOpen(true)} aria-label="Carrito">
             <Icon name="bag" size={18} />
             <span className="nav__bag-count">{app.cart.length}</span>

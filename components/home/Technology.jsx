@@ -107,16 +107,12 @@ export default function Technology() {
               </div>
             </div>
             <div className="tech__360-frame">
-              <SneakerStage dark label="360° · drop sneaker photo" />
+              <SneakerStage dark image="/zapato.png" label="AURIX · Vista 360°" />
               <div className="tech__360-dots">
                 {[0, 1, 2, 3, 4, 5].map(i => (
                   <span key={i} className={i === 2 ? 'is-on' : ''} />
                 ))}
               </div>
-              <button className="tech__360-btn">
-                <Icon name="play" size={12} />
-                <span className="mono">ROTAR 360°</span>
-              </button>
             </div>
           </div>
         </div>

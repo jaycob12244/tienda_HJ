@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase';
+
 /**
  * Calcula el subtotal del carrito.
  */
@@ -50,4 +52,83 @@ export function buildOrderSummary(cart, form, delivery) {
     eta:       delivery?.sub   ?? '3–5 días hábiles',
     createdAt: new Date().toISOString(),
   };
+}
+
+// Obtiene el carrito del usuario desde Supabase.
+export async function getCartFromDB(userId) {
+  const { data, error } = await supabase
+    .from('cart_items')
+    .select('qty, products(id, name, price, currency, badge, rating, description, image, colorway, brands(name), categories(slug))')
+    .eq('user_id', userId);
+
+  if (error) throw error;
+
+  return data
+    .filter(item => item.products != null) // ignorar filas huérfanas (producto eliminado)
+    .map(item => ({
+    product: {
+      id: item.products.id,
+      name: item.products.name,
+      brand: item.products.brands?.name ?? '',
+      category: item.products.categories?.slug ?? '',
+      price: item.products.price,
+      currency: item.products.currency,
+      badge: item.products.badge,
+      rating: item.products.rating,
+      desc: item.products.description,
+      image: item.products.image ?? null,
+      colorway: item.products.colorway ?? null,
+    },
+    qty: item.qty,
+  }));
+}
+
+// Crea o actualiza un item del carrito.
+export async function upsertCartItemDB(userId, productId, qty) {
+  const { error } = await supabase
+    .from('cart_items')
+    .upsert(
+      { user_id: userId, product_id: productId, qty },
+      { onConflict: 'user_id,product_id' }
+    );
+
+  if (error) throw error;
+}
+
+// Elimina un item del carrito.
+export async function removeCartItemDB(userId, productId) {
+  const { error } = await supabase
+    .from('cart_items')
+    .delete()
+    .eq('user_id', userId)
+    .eq('product_id', productId);
+
+  if (error) throw error;
+}
+
+// Vacía el carrito completo del usuario.
+export async function clearCartDB(userId) {
+  const { error } = await supabase
+    .from('cart_items')
+    .delete()
+    .eq('user_id', userId);
+
+  if (error) throw error;
+}
+
+// Migra el carrito local (localStorage) a Supabase al hacer login.
+export async function migrateLocalCartToDB(userId, localCart) {
+  if (!localCart || localCart.length === 0) return;
+
+  const items = localCart.map(line => ({
+    user_id: userId,
+    product_id: line.product.id,
+    qty: line.qty,
+  }));
+
+  const { error } = await supabase
+    .from('cart_items')
+    .upsert(items, { onConflict: 'user_id,product_id', ignoreDuplicates: true });
+
+  if (error) throw error;
 }

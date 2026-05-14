@@ -6,7 +6,7 @@ import Icon    from '../components/ui/Icon';
 import SneakerStage from '../components/ui/SneakerStage';
 import CartDrawer   from '../components/cart/CartDrawer';
 import SearchOverlay from '../components/cart/SearchOverlay';
-import { PRODUCTS }  from '../data/products';
+import { getAllProducts } from '../services/productService';
 
 /* Métricas técnicas por modelo */
 const METRICS = {
@@ -66,9 +66,14 @@ const ROWS = [
 ];
 
 export default function Performance() {
-  const [left,  setLeft]  = useState(null);
-  const [right, setRight] = useState(null);
+  const [left,     setLeft]     = useState(null);
+  const [right,    setRight]    = useState(null);
+  const [products, setProducts] = useState([]);
   const comparing = left && right && left.id !== right.id;
+
+  useEffect(() => {
+    getAllProducts().then(data => { if (data) setProducts(data); });
+  }, []);
 
   return (
     <>
@@ -101,6 +106,7 @@ export default function Performance() {
                   selected={left}
                   excluded={right?.id}
                   onSelect={setLeft}
+                  products={products}
                 />
                 <div className="pf-select__vs">
                   <span className="mono">VS</span>
@@ -110,6 +116,7 @@ export default function Performance() {
                   selected={right}
                   excluded={left?.id}
                   onSelect={setRight}
+                  products={products}
                 />
               </div>
             </div>
@@ -141,7 +148,7 @@ export default function Performance() {
 }
 
 /* ── Selector de zapato ── */
-function ShoeSelector({ side, selected, excluded, onSelect }) {
+function ShoeSelector({ side, selected, excluded, onSelect, products }) {
   return (
     <div className="pf-selector">
       <div className="pf-selector__head">
@@ -153,7 +160,7 @@ function ShoeSelector({ side, selected, excluded, onSelect }) {
         )}
       </div>
       <div className="pf-selector__grid">
-        {PRODUCTS.map(p => {
+        {products.map(p => {
           const active   = selected?.id === p.id;
           const disabled = excluded === p.id;
           return (

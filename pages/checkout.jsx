@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Icon, { Monogram } from '../components/ui/Icon';
 import { useApp } from '../context/AppContext';
 import { formatTotal } from '../utils/formatPrice';
+import { supabase } from '../lib/supabase';
 
 const PAYMENT_METHODS = [
   { id: 'card',   label: 'Tarjeta',  icon: 'credit-card' },
@@ -30,6 +31,8 @@ export default function Checkout() {
   const [delivery, setDelivery] = useState('standard');
   const [errors,   setErrors]   = useState({});
   const [done,     setDone]     = useState(false);
+  const [orderErr, setOrderErr] = useState(null);
+  const [saving,   setSaving]   = useState(false);
 
   const deliveryObj  = DELIVERY_OPTIONS.find(d => d.id === delivery);
   const deliveryCost = deliveryObj?.price ?? 0;
@@ -48,11 +51,60 @@ export default function Checkout() {
     return Object.keys(e).length === 0;
   };
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    setDone(true);
-    app.cart.forEach(l => app.removeFromCart(l.product.id)); // vaciar carrito
+
+    setSaving(true);
+    setOrderErr(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const { data: order, error: orderError } = await supabase
+          .from('orders')
+          .insert({
+            user_id:         session.user.id,
+            total:           total,
+            currency:        '€',
+            status:          'pending',
+            delivery_method: delivery,
+            full_name:       form.name,
+            address:         form.address,
+            city:            form.city,
+            postal_code:     form.postal,
+            payment_method:  payment,
+          })
+          .select()
+          .single();
+
+        if (orderError) throw orderError;
+
+        const orderItems = app.cart.map(line => ({
+          order_id:      order.id,
+          product_id:    line.product.id,
+          product_name:  line.product.name,
+          product_price: line.product.price,
+          qty:           line.qty,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(orderItems);
+
+        if (itemsError) throw itemsError;
+      }
+
+      await app.clearCart();
+      setDone(true);
+
+    } catch (err) {
+      console.error('Error guardando orden:', err);
+      setOrderErr('Error al procesar el pedido. Inténtalo de nuevo.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ── Confirmación ── */
@@ -187,9 +239,19 @@ export default function Checkout() {
               )}
             </section>
 
-            <button type="submit" className="btn btn--primary btn--lg btn--icon ck-submit">
-              Confirmar pedido
-              <span className="btn__icon"><Icon name="arrow-right" size={15} /></span>
+            {orderErr && (
+              <div className="auth__serverErr" style={{ marginBottom: 12 }}>
+                {orderErr}
+              </div>
+            )}
+            <button
+              type="submit"
+              className="btn btn--primary btn--lg btn--icon"
+              style={{ width: '100%' }}
+              disabled={saving}
+            >
+              {saving ? 'Procesando…' : 'Confirmar pedido'}
+              {!saving && <span className="btn__icon"><Icon name="arrow-right" size={14} /></span>}
             </button>
             <p className="ck-hint mono">Pago cifrado · SSL · PCI-DSS · Datos no almacenados</p>
           </div>

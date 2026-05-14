@@ -52,29 +52,32 @@ export default function Home() {
         <main>
           <Hero onShop={scrollToShop} />
 
-          <Reveal variant="fade" duration={800}>
-            <Marquee />
-          </Reveal>
+          {/* Wrapper keeps body's dark canvas from bleeding through Reveal opacity:0 states */}
+          <div style={{ background: 'var(--paper)' }}>
+            <Reveal variant="fade" duration={800}>
+              <Marquee />
+            </Reveal>
 
-          <Reveal variant="rise">
-            <Categories />
-          </Reveal>
+            <Reveal variant="rise">
+              <Categories />
+            </Reveal>
 
-          <Reveal variant="rise" id="technology">
-            <Technology />
-          </Reveal>
+            <Reveal variant="rise" id="technology">
+              <Technology />
+            </Reveal>
 
-          <Reveal variant="fade">
-            <Benefits />
-          </Reveal>
+            <Reveal variant="fade">
+              <Benefits />
+            </Reveal>
 
-          <Reveal variant="rise">
-            <Newsletter />
-          </Reveal>
+            <Reveal variant="rise">
+              <Newsletter />
+            </Reveal>
 
-          <Reveal variant="fade">
-            <Footer />
-          </Reveal>
+            <Reveal variant="fade">
+              <Footer />
+            </Reveal>
+          </div>
         </main>
       </div>
 
