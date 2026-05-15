@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 import ScrollProgress from '../components/ui/ScrollProgress';
@@ -15,14 +15,11 @@ import Technology       from '../components/home/Technology';
 import Benefits         from '../components/home/Benefits';
 import Newsletter       from '../components/home/Newsletter';
 
-import QuickViewModal from '../components/product/QuickViewModal';
 import CartDrawer     from '../components/cart/CartDrawer';
 import SearchOverlay  from '../components/cart/SearchOverlay';
 
 export default function Home() {
   const router = useRouter();
-  const [quickView, setQuickView] = useState(null);
-
   useEffect(() => {
     if (router.query.scroll === 'technology') {
       const t = setTimeout(() => {
@@ -82,11 +79,6 @@ export default function Home() {
       </div>
 
       {/* Overlays */}
-      <QuickViewModal
-        product={quickView}
-        open={quickView !== null}
-        onClose={() => setQuickView(null)}
-      />
       <CartDrawer />
       <SearchOverlay />
     </>

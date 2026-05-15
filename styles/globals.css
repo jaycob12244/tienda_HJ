@@ -1087,8 +1087,6 @@ p { margin: 0; }
   opacity: 1;
   transform: none;
 }
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-@keyframes sheetIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: none; } }
 .qv__close {
   position: absolute; top: 18px; right: 18px; z-index: 3;
   width: 40px; height: 40px; border-radius: 50%;
