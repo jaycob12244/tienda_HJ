@@ -50,7 +50,11 @@ html {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  /* Ocultar scrollbar — scroll funciona por touch/rueda/teclado */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge legacy */
 }
+html::-webkit-scrollbar { display: none; } /* Chrome · Safari · Opera */
 body {
   font-family: var(--font-body);
   background: #050505;
@@ -501,6 +505,9 @@ p { margin: 0; }
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  /* Fix: iOS Safari ignores overflow:hidden cuando un hijo tiene will-change:transform */
+  transform: translateZ(0);
+  isolation: isolate;
 }
 /* Both title lines pinned together at the top of the stage */
 .hero__titles {
