@@ -452,7 +452,8 @@ p { margin: 0; }
 @media (max-width: 760px) {
   .nav__inner { height: 64px; }
   .nav__cta { display: none; }
-  .nav__icon:not(:last-of-type) { display: none; }
+  /* Ocultar solo búsqueda — favoritos y perfil se mantienen visibles */
+  .nav__icon[aria-label="Buscar"] { display: none; }
   .nav__burger { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
   .nav__mobile {
     display: flex; flex-direction: column;
@@ -468,6 +469,9 @@ p { margin: 0; }
   }
   .nav__mobile-foot { display: flex; gap: 8px; margin-top: 16px; }
   .nav__mobile-foot .btn { flex: 1; }
+  /* Botones sobre fondo oscuro del drawer */
+  .nav__mobile-foot .btn--primary { background: var(--paper); color: var(--ink); }
+  .nav__mobile-foot .btn--ghost   { color: var(--paper); border-color: rgba(250,249,246,0.25); }
 }
 
 /* ========================================
