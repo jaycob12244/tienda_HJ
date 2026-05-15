@@ -82,9 +82,11 @@ export default function Home() {
       </div>
 
       {/* Overlays */}
-      {quickView && (
-        <QuickViewModal product={quickView} onClose={() => setQuickView(null)} />
-      )}
+      <QuickViewModal
+        product={quickView}
+        open={quickView !== null}
+        onClose={() => setQuickView(null)}
+      />
       <CartDrawer />
       <SearchOverlay />
     </>

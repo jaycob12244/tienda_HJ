@@ -1036,8 +1036,25 @@ p { margin: 0; }
 /* ========================================
    QuickView Modal
    ======================================== */
-.qv { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
-.qv__backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.45); backdrop-filter: blur(8px); animation: fadeIn .4s var(--ease); }
+/* QuickViewModal — always in DOM, toggled by .is-open */
+.qv {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s 0.4s;
+}
+.qv.is-open {
+  pointer-events: auto;
+  visibility: visible;
+  transition: visibility 0s 0s;
+}
+.qv__backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.45); backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.4s var(--ease); }
+.qv.is-open .qv__backdrop { opacity: 1; }
 .qv__sheet {
   position: relative;
   width: min(1080px, calc(100vw - 40px));
@@ -1047,7 +1064,13 @@ p { margin: 0; }
   overflow: hidden;
   display: grid; grid-template-columns: 1.1fr 1fr;
   box-shadow: var(--sh-3);
-  animation: sheetIn .5s var(--ease);
+  opacity: 0;
+  transform: scale(0.97) translateY(16px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.qv.is-open .qv__sheet {
+  opacity: 1;
+  transform: none;
 }
 @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: none; } }

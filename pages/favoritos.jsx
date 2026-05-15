@@ -98,13 +98,12 @@ export default function Favoritos() {
         <Footer />
       </div>
 
-      {quickView && (
-        <QuickViewModal
-          product={quickView}
-          allProducts={allProducts}
-          onClose={() => setQuickView(null)}
-        />
-      )}
+      <QuickViewModal
+        product={quickView}
+        open={quickView !== null}
+        allProducts={allProducts}
+        onClose={() => setQuickView(null)}
+      />
       <CartDrawer />
       <SearchOverlay />
     </>
