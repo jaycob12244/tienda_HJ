@@ -124,12 +124,20 @@ export default function NavBar() {
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="nav__mobile">
-          {NAV_LINKS.map(l => (
-            <button key={l.id} className="nav__mobile-link" onClick={() => handleNav(l.id)}>{l.label}</button>
-          ))}
-          <div className="nav__mobile-foot">
-            <button className="btn btn--primary" onClick={() => { setMobileOpen(false); router.push('/tienda'); }}>Ver colección</button>
-            <button className="btn btn--ghost" onClick={() => app.setCartOpen(true)}>Carrito ({app.cart.length})</button>
+          <div className="nav__mobile-inner">
+            {NAV_LINKS.map(l => (
+              <button key={l.id} className="nav__mobile-link" onClick={() => handleNav(l.id)}>{l.label}</button>
+            ))}
+            <button
+              className="nav__mobile-link"
+              onClick={() => { setMobileOpen(false); router.push('/login'); }}
+            >
+              {app.user ? 'Mi cuenta' : 'Iniciar sesión'}
+            </button>
+            <div className="nav__mobile-foot">
+              <button className="btn btn--primary" onClick={() => { setMobileOpen(false); router.push('/tienda'); }}>Ver colección</button>
+              <button className="btn btn--ghost" onClick={() => app.setCartOpen(true)}>Carrito ({app.cart.length})</button>
+            </div>
           </div>
         </div>
       )}
