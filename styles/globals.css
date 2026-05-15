@@ -461,10 +461,20 @@ p { margin: 0; }
   .nav__icon[aria-label="Cuenta"] { display: none; }
   .nav__burger { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
   .nav__mobile {
-    display: flex; flex-direction: column;
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s var(--ease);
+    overflow: hidden;
     background: rgba(10,10,10,0.95);
     backdrop-filter: blur(20px);
     border-top: 1px solid rgba(250,249,246,0.08);
+  }
+  .nav__mobile.is-open {
+    grid-template-rows: 1fr;
+  }
+  .nav__mobile-inner {
+    overflow: hidden;
+    display: flex; flex-direction: column;
     padding: 16px var(--gutter) 24px;
     gap: 4px;
   }

@@ -121,10 +121,9 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="nav__mobile">
-          <div className="nav__mobile-inner">
+      {/* Mobile drawer — always in DOM, visibility via is-open */}
+      <div className={`nav__mobile${mobileOpen ? ' is-open' : ''}`}>
+        <div className="nav__mobile-inner">
             {NAV_LINKS.map(l => (
               <button key={l.id} className="nav__mobile-link" onClick={() => handleNav(l.id)}>{l.label}</button>
             ))}
@@ -140,7 +139,7 @@ export default function NavBar() {
             </div>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }
