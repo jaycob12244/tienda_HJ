@@ -11,22 +11,31 @@ const FRAMES = Array.from({ length: COUNT }, (_, i) =>
 const LERP = 0.2; // smoothing factor — lower = slower/smoother, higher = snappier
 
 export default function Hero() {
-  const heroRef   = useRef(null);
-  const targetT   = useRef(0);   // raw scroll progress (updated on scroll)
-  const currentT  = useRef(0);   // lerped progress (drives the visual)
-  const preloaded = useRef(false);
+  const heroRef    = useRef(null);
+  const targetT    = useRef(0);   // raw scroll progress (updated on scroll)
+  const currentT   = useRef(0);   // lerped progress (drives the visual)
+
+  // Cache de imágenes precargadas — solo usamos frames que ya están listos
+  const imageCache = useRef(new Array(COUNT).fill(null));
+  const lastLoaded = useRef(0); // último índice confirmado como cargado
 
   // Refs a nodos DOM — el rAF loop los actualiza directamente sin re-renders
   const imgRef   = useRef(null);
   const shoeRef  = useRef(null);
   const titleRef = useRef(null);
 
-  // Preload all frames so scroll is instant
+  // Preload todos los frames en orden; marca cada uno cuando termina de cargar
   useEffect(() => {
-    if (preloaded.current) return;
-    preloaded.current = true;
-    FRAMES.forEach(src => {
+    FRAMES.forEach((src, i) => {
       const img = new window.Image();
+      img.onload = () => {
+        imageCache.current[i] = img;
+        // Actualizar lastLoaded de forma secuencial para no mostrar huecos
+        if (i === 0) lastLoaded.current = 0;
+        while (imageCache.current[lastLoaded.current + 1] && lastLoaded.current < COUNT - 1) {
+          lastLoaded.current++;
+        }
+      };
       img.src = src;
     });
   }, []);
@@ -40,8 +49,12 @@ export default function Hero() {
       if (Math.abs(next - prev) > 0.0001) {
         currentT.current = next;
         // Actualización directa al DOM — React no se entera, cero re-renders
-        const idx = Math.min(COUNT - 1, Math.round(next * (COUNT - 1)));
-        if (imgRef.current)   imgRef.current.src = FRAMES[idx];
+        // Usar solo frames que ya están cargados — evita blancos en producción
+        const ideal = Math.min(COUNT - 1, Math.round(next * (COUNT - 1)));
+        const idx   = Math.min(ideal, lastLoaded.current);
+        if (imgRef.current && imageCache.current[idx]) {
+          imgRef.current.src = imageCache.current[idx].src;
+        }
         if (shoeRef.current)  shoeRef.current.style.transform =
           `translate3d(0, ${next * -30}px, 0) scale(${1 + next * 0.04})`;
         if (titleRef.current) titleRef.current.style.transform =
