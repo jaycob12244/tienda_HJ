@@ -416,8 +416,23 @@ p { margin: 0; }
   color: rgba(250,249,246,0.7);
   border-radius: var(--r-pill);
   transition: color .25s var(--ease), background .25s var(--ease);
+  position: relative;
 }
 .nav__link:hover { color: var(--paper); background: rgba(250,249,246,0.08); }
+.nav__link::after {
+  content: '';
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  right: 50%;
+  height: 1px;
+  background: var(--paper);
+  transition: left 0.25s var(--ease), right 0.25s var(--ease);
+}
+.nav__link:hover::after {
+  left: 16px;
+  right: 16px;
+}
 .nav__right { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .nav__icon {
   position: relative;
@@ -1715,6 +1730,32 @@ p { margin: 0; }
 .sh-card__price { font-size: 13px; color: var(--paper); }
 .sh-card__arrow { color: var(--muted); transition: color .2s var(--ease); }
 .sh-card:hover .sh-card__arrow { color: var(--paper); }
+
+/* Shop — skeleton loading cards */
+@keyframes skeleton-pulse {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.sh-skeleton {
+  background: var(--ink-2);
+  border-radius: var(--r-md);
+  aspect-ratio: 3 / 4;
+  position: relative;
+  overflow: hidden;
+}
+.sh-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--ink-3) 50%,
+    transparent 100%
+  );
+  animation: skeleton-pulse 1.4s var(--ease) infinite;
+}
 
 /* QuickView real image */
 .qv__real-img {

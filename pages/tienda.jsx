@@ -77,8 +77,10 @@ export default function Tienda() {
           <div className="shop-grid-wrap">
             <div className="container container--wide">
               {loading && (
-                <div className="shop-empty">
-                  <span className="mono">Cargando productos…</span>
+                <div className="shop-grid">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="sh-skeleton" />
+                  ))}
                 </div>
               )}
               {!loading && error && (
