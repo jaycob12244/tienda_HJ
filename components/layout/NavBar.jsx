@@ -130,7 +130,7 @@ export default function NavBar() {
             ))}
             <button
               className="nav__mobile-link"
-              onClick={() => { setMobileOpen(false); router.push('/login'); }}
+              onClick={() => { setMobileOpen(false); router.push(app.user ? '/favoritos' : '/login'); }}
             >
               {app.user ? 'Mi cuenta' : 'Iniciar sesión'}
             </button>
