@@ -45,7 +45,8 @@
    Reset & Base
    ======================================== */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; overflow-x: hidden; }
+html, body { margin: 0; padding: 0; }
+body { overflow-x: hidden; } /* Solo en body — overflow-x en html mata position:sticky */
 html {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
