@@ -33,75 +33,79 @@ function saveLocalState(cart, favorites) {
 }
 
 export function AppProvider({ children }) {
-  const [user,       setUser]       = useState(null);
-  const [cart,       setCart]       = useState([]);
-  const [favorites,  setFavorites]  = useState(new Set());
-  const [cartOpen,   setCartOpen]   = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [user,        setUser]        = useState(null);
+  const [isAdmin,     setIsAdmin]     = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [cart,        setCart]        = useState([]);
+  const [favorites,   setFavorites]   = useState(new Set());
+  const [cartOpen,    setCartOpen]    = useState(false);
+  const [searchOpen,  setSearchOpen]  = useState(false);
   const cartRef = useRef(cart);
 
-  // Mantener ref actualizada para usarla en callbacks async
   useEffect(() => { cartRef.current = cart; }, [cart]);
 
-  // Cargar estado local al inicio
   useEffect(() => {
     const { cart: c, favs } = loadLocalState();
     setCart(c);
     setFavorites(favs);
   }, []);
 
-  // Escuchar cambios de auth
   useEffect(() => {
+    // Safety net: resolve authLoading immediately if no session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        syncUserData(session.user.id);
-      }
+      if (!session) setAuthLoading(false);
     });
+
+    // Hard timeout: if onAuthStateChange never fires (network issue), unblock after 5s
+    const timeout = setTimeout(() => setAuthLoading(false), 5000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        clearTimeout(timeout);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
           await syncUserData(currentUser.id);
         } else {
-          // Logout: restaurar localStorage
+          setIsAdmin(false);
           const { cart: c, favs } = loadLocalState();
           setCart(c);
           setFavorites(favs);
         }
+
+        setAuthLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Sincronizar datos del usuario desde DB al hacer login
   async function syncUserData(userId) {
     try {
       const localCart = cartRef.current;
       if (localCart.length > 0) {
         await migrateLocalCartToDB(userId, localCart);
       }
-      const [dbFavs, dbCart] = await Promise.all([
+      const [dbFavs, dbCart, profileRes] = await Promise.all([
         getFavoritesFromDB(userId),
         getCartFromDB(userId),
+        supabase.from('profiles').select('role').eq('id', userId).single(),
       ]);
       setFavorites(dbFavs);
       setCart(dbCart);
+      setIsAdmin(profileRes.data?.role === 'admin' && !profileRes.error);
     } catch (e) {
       console.warn('Error sincronizando datos de usuario:', e);
     }
   }
 
-  // Persistir a localStorage cuando no hay usuario
   useEffect(() => {
     if (!user) saveLocalState(cart, favorites);
   }, [cart, favorites, user]);
-
-  // ── Cart actions ──
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -153,8 +157,6 @@ export function AppProvider({ children }) {
     }
   };
 
-  // ── Favorites actions ──
-
   const toggleFav = (id) => {
     setFavorites(prev => {
       const next = new Set(prev);
@@ -171,7 +173,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      user,
+      user, isAdmin, authLoading,
       cart, addToCart, removeFromCart, changeQty, clearCart,
       favorites, toggleFav,
       cartOpen,   setCartOpen,

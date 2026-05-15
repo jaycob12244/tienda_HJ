@@ -3,17 +3,20 @@ import { supabase } from '../lib/supabase';
 // Normaliza un producto de Supabase al formato que usa el frontend
 function normalize(p) {
   return {
-    id: p.id,
-    name: p.name,
-    brand: p.brands?.name ?? '',
-    category: p.categories?.slug ?? '',
-    price: p.price,
-    currency: p.currency,
-    badge: p.badge,
-    rating: p.rating,
-    desc: p.description,
-    image: p.image ?? null,
-    colorway: p.colorway ?? null,
+    id:               p.id,
+    name:             p.name,
+    brand:            p.brands?.name       ?? '',
+    category:         p.categories?.slug   ?? '',
+    price:            p.price,
+    currency:         p.currency,
+    badge:            p.badge,
+    rating:           p.rating,
+    desc:             p.description,
+    image:            p.image              ?? null,
+    colorway:         p.colorway           ?? null,
+    images:           (p.product_images ?? []).sort((a, b) => a.position - b.position),
+    available_colors: p.available_colors   ?? [],
+    available_sizes:  p.available_sizes    ?? [],
   };
 }
 
@@ -22,7 +25,7 @@ function normalize(p) {
 export async function getAllProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('*, brands(name), categories(slug, label)')
+    .select('*, brands(name), categories(slug, label), product_images(id, url, position)')
     .order('id');
 
   if (error) {

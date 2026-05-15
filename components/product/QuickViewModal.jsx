@@ -4,30 +4,46 @@ import SneakerStage from '../ui/SneakerStage';
 import { useApp } from '../../context/AppContext';
 import { getRelated } from '../../services/productService';
 
-const SIZES  = ['38', '39', '40', '41', '42', '43', '44', '45'];
-const COLORS = [
-  { id: 0, n: 'Bone', hex: '#E8E5DD' },
-  { id: 1, n: 'Onyx', hex: '#0A0A0A' },
-  { id: 2, n: 'Cream', hex: '#C9B8A1' },
+// Fallbacks hardcodeados — se usan solo si el producto no tiene datos propios
+const COLORS_FALLBACK = [
+  { name: 'Bone', hex: '#E8E5DD' },
+  { name: 'Onyx', hex: '#0A0A0A' },
+  { name: 'Cream', hex: '#C9B8A1' },
 ];
+const SIZES_FALLBACK = ['38', '39', '40', '41', '42', '43', '44', '45'];
 
 export default function QuickViewModal({ product: initialProduct, allProducts = [], onClose }) {
   const app = useApp();
-  const [product, setProduct] = useState(initialProduct);
-  const [size,    setSize]    = useState(null);
-  const [color,   setColor]   = useState(0);
+  const [product,   setProduct]   = useState(initialProduct);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [color,     setColor]     = useState(0);
+  const [size,      setSize]      = useState(null);
 
-  const related   = getRelated(product, allProducts);
-  const isFav     = app.favorites.has(product.id);
+  const related = getRelated(product, allProducts);
+  const isFav   = app.favorites.has(product.id);
 
-  // Resetear talla/color al cambiar de producto
+  // Imágenes: product.images[] → fallback a legacy product.image → vacío
+  const images = product.images?.length
+    ? product.images
+    : product.image
+    ? [{ id: 'legacy', url: product.image }]
+    : [];
+
+  // Colores y tallas dinámicos con fallback
+  const colors = product.available_colors?.length ? product.available_colors : COLORS_FALLBACK;
+  const sizes  = product.available_sizes?.length  ? product.available_sizes  : SIZES_FALLBACK;
+
+  // Reset al cambiar de producto inicial (prop)
   useEffect(() => {
     setProduct(initialProduct);
+    setActiveIdx(0);
     setSize(null);
     setColor(0);
   }, [initialProduct]);
 
+  // Reset al cambiar de producto vía relacionados
   useEffect(() => {
+    setActiveIdx(0);
     setSize(null);
     setColor(0);
   }, [product.id]);
@@ -52,11 +68,35 @@ export default function QuickViewModal({ product: initialProduct, allProducts = 
           <Icon name="close" size={18} />
         </button>
 
+        {/* Media: galería o SneakerStage */}
         <div className="qv__media">
-          {product.image
-            ? <img src={product.image} alt={product.name} className="qv__real-img" />
-            : <SneakerStage label={`${product.name} · drop photo`} />
-          }
+          {images.length > 0 ? (
+            <div className="qv__gallery">
+              <div className="qv__gallery-main">
+                <img
+                  src={images[activeIdx]?.url}
+                  alt={product.name}
+                  className="qv__real-img"
+                />
+              </div>
+              {images.length > 1 && (
+                <div className="qv__gallery-strip">
+                  {images.map((img, i) => (
+                    <button
+                      key={img.id ?? i}
+                      className={`qv__gallery-thumb${activeIdx === i ? ' is-active' : ''}`}
+                      onClick={() => setActiveIdx(i)}
+                      aria-label={`Imagen ${i + 1}`}
+                    >
+                      <img src={img.url} alt="" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <SneakerStage label={`${product.name} · drop photo`} />
+          )}
         </div>
 
         <div className="qv__panel">
@@ -75,7 +115,7 @@ export default function QuickViewModal({ product: initialProduct, allProducts = 
 
           <div className="qv__rate">
             <Icon name="star" size={13} />
-            <span className="mono">{product.rating.toFixed(1)}</span>
+            <span className="mono">{product.rating?.toFixed(1) ?? '—'}</span>
             <span className="qv__rate-sep">·</span>
             <span className="mono">421 reseñas</span>
           </div>
@@ -86,15 +126,15 @@ export default function QuickViewModal({ product: initialProduct, allProducts = 
           <div className="qv__group">
             <div className="qv__group-head">
               <div className="eyebrow">Color</div>
-              <div className="qv__group-val">{COLORS[color].n}</div>
+              <div className="qv__group-val">{colors[color]?.name ?? '—'}</div>
             </div>
             <div className="qv__colors">
-              {COLORS.map(c => (
+              {colors.map((c, i) => (
                 <button
-                  key={c.id}
-                  className={`qv__color${color === c.id ? ' is-on' : ''}`}
-                  onClick={() => setColor(c.id)}
-                  aria-label={c.n}
+                  key={i}
+                  className={`qv__color${color === i ? ' is-on' : ''}`}
+                  onClick={() => setColor(i)}
+                  aria-label={c.name}
                 >
                   <span style={{ background: c.hex }} />
                 </button>
@@ -109,9 +149,9 @@ export default function QuickViewModal({ product: initialProduct, allProducts = 
               <button className="qv__guide ulink">Guía de tallas</button>
             </div>
             <div className="qv__sizes">
-              {SIZES.map(s => (
+              {sizes.map((s, i) => (
                 <button
-                  key={s}
+                  key={i}
                   className={`qv__size${size === s ? ' is-on' : ''}`}
                   onClick={() => setSize(s)}
                 >
@@ -149,8 +189,12 @@ export default function QuickViewModal({ product: initialProduct, allProducts = 
                     onClick={() => setProduct(r)}
                   >
                     <div className="qv__rel-media">
-                      {r.image
-                        ? <img src={r.image} alt={r.name} className="qv__rel-img" />
+                      {r.images?.[0]?.url || r.image
+                        ? <img
+                            src={r.images?.[0]?.url ?? r.image}
+                            alt={r.name}
+                            className="qv__rel-img"
+                          />
                         : <SneakerStage label={r.name} />
                       }
                     </div>

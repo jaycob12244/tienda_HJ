@@ -6,10 +6,16 @@ export default function ProductCard({ product, onQuickView }) {
   const app = useApp();
   const isFav = app.favorites.has(product.id);
 
+  // Primera imagen de product_images, o image legacy, o null (→ SneakerStage)
+  const coverUrl = product.images?.[0]?.url ?? product.image ?? null;
+
   return (
     <article className="pc">
       <div className="pc__media">
-        <SneakerStage label={`${product.name} · drop photo`} />
+        {coverUrl
+          ? <img src={coverUrl} alt={product.name} className="pc__cover-img" />
+          : <SneakerStage label={`${product.name} · drop photo`} />
+        }
         <button
           className={`pc__fav${isFav ? ' is-on' : ''}`}
           onClick={() => app.toggleFav(product.id)}
@@ -33,7 +39,7 @@ export default function ProductCard({ product, onQuickView }) {
           <div className="eyebrow">{product.category}</div>
           <div className="pc__rate">
             <Icon name="star" size={11} />
-            <span className="mono">{product.rating.toFixed(1)}</span>
+            <span className="mono">{product.rating?.toFixed(1) ?? '—'}</span>
           </div>
         </div>
         <h3 className="pc__name">{product.name}</h3>
