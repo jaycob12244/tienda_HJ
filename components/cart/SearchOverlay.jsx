@@ -32,14 +32,12 @@ export default function SearchOverlay() {
     return () => window.removeEventListener('keydown', onKey);
   }, [app.setSearchOpen]);
 
-  if (!app.searchOpen) return null;
-
   const results = q.trim()
     ? products.filter(p => (p.name + p.category + p.desc).toLowerCase().includes(q.toLowerCase()))
     : [];
 
   return (
-    <div className="so">
+    <div className={`so${app.searchOpen ? ' is-open' : ''}`}>
       <div className="so__backdrop" onClick={() => app.setSearchOpen(false)} />
       <div className="so__sheet">
         <div className="so__bar">

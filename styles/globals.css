@@ -1152,8 +1152,31 @@ p { margin: 0; }
 /* ========================================
    Search Overlay
    ======================================== */
-.so { position: fixed; inset: 0; z-index: 250; }
-.so__backdrop { position: absolute; inset: 0; background: rgba(10,10,10,0.5); backdrop-filter: blur(8px); animation: fadeIn .35s var(--ease); }
+/* SearchOverlay — always in DOM, toggled by .is-open */
+.so {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  pointer-events: none;
+  visibility: hidden;
+  transition: visibility 0s 0.35s;
+}
+.so.is-open {
+  pointer-events: auto;
+  visibility: visible;
+  transition: visibility 0s 0s;
+}
+.so__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,10,0.5);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.so.is-open .so__backdrop {
+  opacity: 1;
+}
 .so__sheet {
   position: relative;
   margin: 8vh auto 0;
@@ -1162,7 +1185,13 @@ p { margin: 0; }
   border-radius: var(--r-xl);
   overflow: hidden;
   box-shadow: var(--sh-3);
-  animation: sheetIn .45s var(--ease);
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+  transition: opacity 0.35s var(--ease), transform 0.35s var(--ease);
+}
+.so.is-open .so__sheet {
+  opacity: 1;
+  transform: none;
 }
 .so__bar { display: flex; align-items: center; gap: 14px; padding: 20px 22px; border-bottom: 1px solid var(--line-2); }
 .so__input { flex: 1; height: 36px; border: none; background: transparent; outline: none; font-size: 18px; letter-spacing: -0.01em; }
