@@ -6,7 +6,7 @@
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3-38BDF8?logo=tailwindcss)
 ![Vercel](https://img.shields.io/badge/Vercel-deployed-black?logo=vercel)
 
-> Tienda de sneakers de alta gama con estética cinematográfica. Catálogo interactivo, carrito persistente, sistema de favoritos, autenticación completa y panel de administración — construido como proyecto de portafolio full-stack.
+> Tienda de zapatos de alta gama con estética cinematográfica. Catálogo interactivo, carrito persistente, sistema de favoritos, autenticación completa y panel de administración — construido como proyecto de portafolio full-stack.
 
 🔗 **[Demo en vivo](https://tienda-hj.vercel.app)** · [Repositorio](https://github.com/jaycob12244/tienda_HJ)
 
@@ -155,3 +155,5 @@ tienda_HJ/
 Proyecto de portafolio full-stack — diseñado, desarrollado y desplegado de forma independiente.
 
 [![GitHub](https://img.shields.io/badge/GitHub-jaycob12244-181717?logo=github)](https://github.com/jaycob12244)
+
+https://tienda-hj.vercel.app/
