@@ -1661,7 +1661,7 @@ p { margin: 0; }
   transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
 }
 .shop-filter:hover { color: var(--paper); border-color: var(--muted); }
-.shop-filter.is-on { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.shop-filter.is-on { background: var(--accent); color: var(--ink); border-color: var(--accent); }
 
 .shop-grid-wrap {
   padding: clamp(36px, 6vh, 80px) 0 clamp(80px, 14vh, 160px);
@@ -1904,6 +1904,27 @@ p { margin: 0; }
 @media (max-width: 1100px) { .shop-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 760px)  { .shop-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
 @media (max-width: 480px)  { .shop-grid { grid-template-columns: 1fr; } }
+
+/* Shop — card animations */
+@keyframes card-enter {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes card-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(10px); }
+}
+.sh-card--animate-in {
+  animation: card-enter 380ms ease-out both;
+}
+.sh-card--animate-out {
+  animation: card-exit 200ms ease-in both;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-card--animate-in,
+  .sh-card--animate-out { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
 
 /* ========================================
    Checkout
