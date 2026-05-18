@@ -61,20 +61,22 @@ export function AppProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        clearTimeout(timeout);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+        try {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
 
-        if (currentUser) {
-          await syncUserData(currentUser.id);
-        } else {
-          setIsAdmin(false);
-          const { cart: c, favs } = loadLocalState();
-          setCart(c);
-          setFavorites(favs);
+          if (currentUser) {
+            await syncUserData(currentUser.id);
+          } else {
+            setIsAdmin(false);
+            const { cart: c, favs } = loadLocalState();
+            setCart(c);
+            setFavorites(favs);
+          }
+        } finally {
+          clearTimeout(timeout);
+          setAuthLoading(false);
         }
-
-        setAuthLoading(false);
       }
     );
 
