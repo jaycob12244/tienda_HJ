@@ -78,8 +78,15 @@ export default function Tienda() {
             <div className="container container--wide">
               {loading && (
                 <div className="shop-grid">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="sh-skeleton" />
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="sh-skeleton">
+                      <div className="sh-skeleton__img" />
+                      <div className="sh-skeleton__info">
+                        <div className="sh-skeleton__line" style={{ width: '40%' }} />
+                        <div className="sh-skeleton__line" style={{ width: '70%', height: '12px' }} />
+                        <div className="sh-skeleton__line" style={{ width: '30%' }} />
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
