@@ -23,6 +23,8 @@ export default function Tienda() {
   const [quickView,    setQuickView]    = useState(null);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState(false);
+  const [isExiting,    setIsExiting]    = useState(false);
+  const [animKey,      setAnimKey]      = useState(0);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -46,6 +48,21 @@ export default function Tienda() {
 
   const filtered = filterByCategory(allProducts, activeFilter);
 
+  const handleFilterChange = (filterId) => {
+    if (filterId === activeFilter) return;
+    setIsExiting(true);
+    setTimeout(() => {
+      setActiveFilter(filterId);
+      setAnimKey(k => k + 1);
+      setIsExiting(false);
+    }, 250);
+  };
+
+  const getCount = (filterId) => {
+    if (filterId === 'todos') return allProducts.length;
+    return allProducts.filter(p => p.category === filterId).length;
+  };
+
   return (
     <>
       <Head><title>Tienda — AURIX</title></Head>
@@ -66,9 +83,9 @@ export default function Tienda() {
                 <button
                   key={f.id}
                   className={`shop-filter${activeFilter === f.id ? ' is-on' : ''}`}
-                  onClick={() => setActiveFilter(f.id)}
+                  onClick={() => handleFilterChange(f.id)}
                 >
-                  {f.label}
+                  {f.label}{!loading && allProducts.length > 0 && ` (${getCount(f.id)})`}
                 </button>
               ))}
             </div>
@@ -122,8 +139,13 @@ export default function Tienda() {
               )}
               {!loading && !error && filtered.length > 0 && (
                 <div className="shop-grid">
-                  {filtered.map(p => (
-                    <article key={p.id} className="sh-card" onClick={() => setQuickView(p)}>
+                  {filtered.map((p, i) => (
+                    <article
+                      key={`${p.id}-${animKey}`}
+                      className={`sh-card${isExiting ? ' sh-card--animate-out' : ' sh-card--animate-in'}`}
+                      style={{ animationDelay: isExiting ? `${Math.min(i, 7) * 30}ms` : `${Math.min(i, 7) * 60}ms` }}
+                      onClick={() => setQuickView(p)}
+                    >
                       <div className="sh-card__media">
                         {p.image
                           ? <img src={p.image} alt={p.name} className="sh-card__img" />
@@ -136,6 +158,13 @@ export default function Tienda() {
                           aria-label="Favorito"
                         >
                           <Icon name="heart" size={14} />
+                        </button>
+                        <button
+                          className="sh-card__quick-add"
+                          onClick={e => { e.stopPropagation(); app.addToCart(p); }}
+                          aria-label={`Agregar ${p.name} al carrito`}
+                        >
+                          + Carrito
                         </button>
                       </div>
                       <div className="sh-card__info">
