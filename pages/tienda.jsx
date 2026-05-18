@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 
 import NavBar         from '../components/layout/NavBar';
@@ -25,6 +25,7 @@ export default function Tienda() {
   const [error,        setError]        = useState(false);
   const [isExiting,    setIsExiting]    = useState(false);
   const [animKey,      setAnimKey]      = useState(0);
+  const filterTimerRef = useRef(null);
 
   useEffect(() => {
     async function fetchProducts() {
@@ -50,8 +51,9 @@ export default function Tienda() {
 
   const handleFilterChange = (filterId) => {
     if (filterId === activeFilter) return;
+    if (filterTimerRef.current) clearTimeout(filterTimerRef.current);
     setIsExiting(true);
-    setTimeout(() => {
+    filterTimerRef.current = setTimeout(() => {
       setActiveFilter(filterId);
       setAnimKey(k => k + 1);
       setIsExiting(false);
@@ -62,6 +64,10 @@ export default function Tienda() {
     if (filterId === 'todos') return allProducts.length;
     return allProducts.filter(p => p.category === filterId).length;
   };
+
+  useEffect(() => {
+    return () => { if (filterTimerRef.current) clearTimeout(filterTimerRef.current); };
+  }, []);
 
   return (
     <>
