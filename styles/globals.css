@@ -498,11 +498,45 @@ p { margin: 0; }
     text-align: left; padding: 14px 8px; font-size: 22px; font-weight: 500;
     font-family: var(--font-display); color: var(--paper);
   }
-  .nav__mobile-foot { display: flex; gap: 8px; margin-top: 16px; }
-  .nav__mobile-foot .btn { flex: 1; }
+  .nav__mobile-links { display: flex; flex-direction: column; }
+  .nav__mobile-divider { height: 1px; background: rgba(250,249,246,0.1); margin: 12px 0; }
+
+  /* Cuenta — usuario logueado */
+  .nav__mobile-account { display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
+  .nav__mobile-user { display: flex; align-items: center; gap: 12px; padding: 4px 8px; }
+  .nav__mobile-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: var(--ink);
+    font-family: var(--font-mono); font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav__mobile-user-info { display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+  .nav__mobile-user-name { font-size: 15px; font-weight: 500; color: var(--paper); text-transform: capitalize; }
+  .nav__mobile-user-email { font-size: 11px; color: var(--muted); font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav__mobile-account-links { display: flex; flex-direction: column; gap: 2px; }
+  .nav__mobile-account-link {
+    display: flex; align-items: center; gap: 10px;
+    text-align: left; padding: 11px 8px; font-size: 14px;
+    color: rgba(250,249,246,0.7); font-family: var(--font-display);
+    border-radius: var(--r-sm); transition: background 150ms, color 150ms;
+  }
+  .nav__mobile-account-link:hover { background: rgba(250,249,246,0.07); color: var(--paper); }
+  .nav__mobile-account-link--logout { color: var(--muted); margin-top: 4px; }
+  .nav__mobile-account-link--logout:hover { color: #ff6b6b; background: rgba(255,107,107,0.08); }
+
+  /* Cuenta — sin sesión */
+  .nav__mobile-login { display: flex; flex-direction: column; gap: 12px; padding: 4px 8px; }
+  .nav__mobile-login-text { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 0; }
+  .nav__mobile-login-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  /* Footer */
+  .nav__mobile-foot { display: flex; gap: 8px; margin-top: 4px; }
+  .nav__mobile-foot .btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; }
   /* Botones sobre fondo oscuro del drawer */
   header.nav .nav__mobile-foot .btn--primary { background: var(--paper); color: var(--ink); }
   header.nav .nav__mobile-foot .btn--ghost   { color: var(--paper); border-color: rgba(250,249,246,0.25); }
+  header.nav .nav__mobile-login .btn--primary { background: var(--paper); color: var(--ink); }
 }
 
 /* ========================================
