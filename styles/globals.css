@@ -1738,22 +1738,39 @@ p { margin: 0; }
 
 .sh-skeleton {
   background: var(--ink-2);
+  border: 1px solid var(--ink-3);
   border-radius: var(--r-md);
-  aspect-ratio: 3 / 4;
+  overflow: hidden;
+}
+.sh-skeleton__img {
+  aspect-ratio: 4 / 3;
+  background: var(--ink-3);
   position: relative;
   overflow: hidden;
 }
-.sh-skeleton::after {
+.sh-skeleton__img::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--ink-3) 50%,
+    rgba(255,255,255,0.06) 50%,
     transparent 100%
   );
-  animation: skeleton-pulse 1.4s var(--ease) infinite;
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+  transform: translateX(-100%);
+}
+.sh-skeleton__info {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sh-skeleton__line {
+  height: 10px;
+  background: var(--ink-3);
+  border-radius: 4px;
 }
 
 /* QuickView real image */
