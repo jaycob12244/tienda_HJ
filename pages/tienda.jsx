@@ -92,15 +92,32 @@ export default function Tienda() {
               )}
               {!loading && error && (
                 <div className="shop-empty">
-                  <span className="mono">Error al cargar productos.</span>
-                  <button className="btn btn--ghost" style={{ marginTop: 16 }} onClick={() => window.location.reload()}>
+                  <Icon name="alert-circle" size={48} className="shop-empty__icon" />
+                  <h2 className="shop-empty__title">
+                    Algo salió mal<br />
+                    <em>cargando la colección</em>
+                  </h2>
+                  <p className="shop-empty__sub">
+                    Revisa tu conexión e intenta de nuevo
+                  </p>
+                  <button className="btn btn--ghost" onClick={() => window.location.reload()}>
                     Reintentar
                   </button>
                 </div>
               )}
               {!loading && !error && filtered.length === 0 && (
                 <div className="shop-empty">
-                  <span className="mono">Sin productos en esta categoría</span>
+                  <Icon name="package" size={48} className="shop-empty__icon" />
+                  <h2 className="shop-empty__title">
+                    Sin resultados<br />
+                    <em>en esta categoría</em>
+                  </h2>
+                  <p className="shop-empty__sub">
+                    Prueba con otro filtro o explora toda la tienda
+                  </p>
+                  <button className="btn btn--ghost" onClick={() => setActiveFilter('todos')}>
+                    Ver todos
+                  </button>
                 </div>
               )}
               {!loading && !error && filtered.length > 0 && (
