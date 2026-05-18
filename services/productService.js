@@ -23,17 +23,29 @@ function normalize(p) {
 // Fetch todos los productos desde Supabase.
 // Devuelve null en caso de error (distinto de [] que sería vacío).
 export async function getAllProducts() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, brands(name), categories(slug, label), product_images(id, url, position)')
-    .order('id');
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('getAllProducts timeout — Supabase no responde')), 8000)
+  );
 
-  if (error) {
-    console.warn('Error fetching products from Supabase:', error.message);
+  try {
+    const { data, error } = await Promise.race([
+      supabase
+        .from('products')
+        .select('*, brands(name), categories(slug, label), product_images(id, url, position)')
+        .order('id'),
+      timeout,
+    ]);
+
+    if (error) {
+      console.warn('Error fetching products from Supabase:', error.message);
+      return null;
+    }
+
+    return data.map(normalize);
+  } catch (e) {
+    console.warn('getAllProducts falló:', e.message);
     return null;
   }
-
-  return data.map(normalize);
 }
 
 // Filtra productos relacionados (misma categoría, distinto id)

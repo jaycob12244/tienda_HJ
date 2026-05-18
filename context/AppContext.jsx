@@ -87,21 +87,28 @@ export function AppProvider({ children }) {
   }, []);
 
   async function syncUserData(userId) {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('syncUserData timeout')), 8000)
+    );
     try {
       const localCart = cartRef.current;
       if (localCart.length > 0) {
-        await migrateLocalCartToDB(userId, localCart);
+        await Promise.race([migrateLocalCartToDB(userId, localCart), timeout]);
       }
-      const [dbFavs, dbCart, profileRes] = await Promise.all([
-        getFavoritesFromDB(userId),
-        getCartFromDB(userId),
-        supabase.from('profiles').select('role').eq('id', userId).single(),
+      const [dbFavs, dbCart, profileRes] = await Promise.race([
+        Promise.all([
+          getFavoritesFromDB(userId),
+          getCartFromDB(userId),
+          supabase.from('profiles').select('role').eq('id', userId).single(),
+        ]),
+        timeout,
       ]);
       setFavorites(dbFavs);
       setCart(dbCart);
       setIsAdmin(profileRes.data?.role === 'admin' && !profileRes.error);
     } catch (e) {
-      console.warn('Error sincronizando datos de usuario:', e);
+      console.warn('Error sincronizando datos de usuario:', e.message);
+      // Supabase no disponible — continuar con datos locales
     }
   }
 
